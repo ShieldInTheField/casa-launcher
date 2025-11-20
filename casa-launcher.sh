@@ -12,7 +12,7 @@ if [[ -z "${CASA_WORKBASE:-}" ]]; then
     exit 1
 fi
 
-LAUNCHER_VERSION="0.1.0"
+LAUNCHER_VERSION="0.1.1"
 
 write_startup_py() {
     local proj_root="$1"
@@ -78,9 +78,17 @@ if [[ "${1:-}" == -* ]]; then
             echo "casa-launcher version $LAUNCHER_VERSION"
             casa_bin_tmp="$(type -P casa || true)"
             if [[ -n "$casa_bin_tmp" && "$casa_bin_tmp" != "$0" ]]; then
-                echo "CASA backend: $("$casa_bin_tmp" --version 2>/dev/null || echo 'No version info')"
+                if "$casa_bin_tmp" --help 2>&1 | grep -q -- "--version"; then
+                    echo "CASA backend: $("$casa_bin_tmp" --version 2>/dev/null || echo 'No version info')"
+                else
+                    echo "CASA backend: (version flag not supported)"
+                fi
             elif [[ -x "/Applications/CASA.app/Contents/MacOS/casa" ]]; then
-                echo "CASA backend: $(/Applications/CASA.app/Contents/MacOS/casa --version 2>/dev/null || echo 'No version info')"
+                if /Applications/CASA.app/Contents/MacOS/casa --help 2>&1 | grep -q -- "--version"; then
+                    echo "CASA backend: $(/Applications/CASA.app/Contents/MacOS/casa --version 2>/dev/null || echo 'No version info')"
+                else
+                    echo "CASA backend: (version flag not supported)"
+                fi
             else
                 echo "CASA backend: not found"
             fi
